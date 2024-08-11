@@ -7,6 +7,25 @@ import google.generativeai as genai
 # Configure the Gemini API key
 api_key = "AIzaSyBGWNH9mygdQepDV1YvPt94TiTTpJ5V5_I"
 genai.configure(api_key=api_key)
+def start_empty_chat():
+
+
+    # Initialize a new chat session
+    generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 64,
+        "max_output_tokens": 1000000,
+        "response_mime_type": "application/json",
+    }
+
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=generation_config,
+    )
+    
+    chat_session = model.start_chat(history=[])  # Start an empty chat session
+    return chat_session
 
 def upload_to_gemini(path, mime_type=None):
     """Uploads the given file to Gemini."""
@@ -28,33 +47,34 @@ def wait_for_files_active(files):
     print("...all files ready")
     print()
 
-def start_chat_with_files(files):
-    """Starts a chat session using the uploaded files."""
-    generation_config = {
-        "temperature": 1,
-        "top_p": 0.95,
-        "top_k": 64,
-        "max_output_tokens": 8192,
-        "response_mime_type": "application/json",
-    }
+# def start_chat_with_files(files):
+#     """Starts a chat session using the uploaded files."""
+#     generation_config = {
+#         "temperature": 1,
+#         "top_p": 0.95,
+#         "top_k": 64,
+#         "max_output_tokens": 8192,
+#         "response_mime_type": "application/json",
+#     }
 
-    model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
-        generation_config=generation_config,
-    )
+#     model = genai.GenerativeModel(
+#         model_name="gemini-1.5-flash",
+#         generation_config=generation_config,
+#     )
 
-    chat_session = model.start_chat(
-        history=[
-            {
-                "role": "user",
-                "parts": [files[0]],
-            }
-        ]
-    )
+#     chat_session = model.start_chat(
+#         history=[
+#             {
+#                 "role": "user",
+#                 "parts": [files[0]],
+#             }
+#         ]
+#     )
 
-    return chat_session
+#     return chat_session
 
-def send_message(chat_session, message):
+def send_message(chat_session,message):
     """Sends a message in the chat session and returns the response."""
     response = chat_session.send_message(message)
+    print("Response", response)
     return response.text

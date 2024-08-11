@@ -2,25 +2,45 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, File
 import os
 import mimetypes
-from googleAI.geminiAPI import upload_to_gemini, wait_for_files_active, start_chat_with_files, send_message
+from googleAI.geminiAPI import upload_to_gemini, wait_for_files_active, start_empty_chat, send_message
 import json
+
 app = FastAPI()
 
-# Health check endpoint
+# Global chat session
+chat_session = None
+
+def initialize_chat_session():
+    global chat_session
+    chat_session = start_empty_chat()
+    if chat_session is None:
+        print("Failed to start chat session.")
+        return
+    # Upload default PDF as knowledge base
+    default_pdf_path = r"C:\Users\tusha\OneDrive\Desktop\HWI_5\pha\data\EMROPUB_2019_en_23536.pdf"
+    mime_type, _ = mimetypes.guess_type(default_pdf_path)
+    uploaded_file = upload_to_gemini(default_pdf_path, mime_type=mime_type or "application/octet-stream")
+    wait_for_files_active([uploaded_file])
+    # Add the default PDF file to the chat session
+    send_message(chat_session, "Add this PDF as knowledge base.")
+
+@app.on_event("startup")
+async def startup_event():
+    initialize_chat_session()
+
 @app.get("/health")
 def health_check():
     return {"Hello": "Hi dev, server is up and running!!!"}
 
-# Greeting endpoint
 @app.get("/hello/{name}")
 def greet_name(name: str):
     return {"Hello": f"Hi {name}, server is up and running!!!"}
 
-# Upload image and process with Gemini API
-
-
 @app.post("/upload-image/")
 async def upload_image(image: UploadFile = File(...)):
+    if chat_session is None:
+        return {"error": "Chat session is not initialized."}
+
     save_dir = "data"
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -41,15 +61,13 @@ async def upload_image(image: UploadFile = File(...)):
     # Wait for the file to be ready
     wait_for_files_active([uploaded_file])
 
-    # Start a chat session with the uploaded file
-    chat_session = start_chat_with_files([uploaded_file])
-
-    # Send a message to the chat session
+    # Send the uploaded image to the chat session and ask a query
     response_text = send_message(chat_session, "Analyze this file for its nutritional content.")
 
-    return {"filename": image.filename, "gemini_response": json.loads(response_text)}
+    # Print response for debugging
+    print(f"Response from Gemini API: {response_text}")
 
+    return {"filename": image.filename, "gemini_response": response_text}
 
-# Run the server
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=3000)

@@ -1,0 +1,4 @@
+fastapi
+unicorn
+google-generativeai
+python-multipart
