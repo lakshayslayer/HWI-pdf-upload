@@ -45,7 +45,7 @@ async def upload_image(image: UploadFile = File(...)):
     chat_session = start_chat_with_files([uploaded_file])
 
     # Send a message to the chat session
-    response_text = send_message(chat_session, "Analyze this file for its nutritional content.")
+    response_text = send_message(chat_session, "Using the attached WHO guidelines and the nutritional details in the attached image, determine if the food item is healthy for children. Provide a detailed explanation based on the guidelines,focusing on aspects like sugar content, sodium, fiber, fat, and overall nutritional value.Conclude with a clear recommendation. Include a summary of any allergy concerns.")
 
     return {"filename": image.filename, "gemini_response": json.loads(response_text)}
 

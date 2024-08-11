@@ -1,12 +1,26 @@
 # googleAI/geminiAPI.py
 
 import os
-import time
+from dotenv import load_dotenv
 import google.generativeai as genai
 
+# Load environment variables from the .env file
+load_dotenv()
+
+# Retrieve the API key from environment variables
+api_key = os.getenv("API_KEY")
+
 # Configure the Gemini API key
-api_key = "AIzaSyBGWNH9mygdQepDV1YvPt94TiTTpJ5V5_I"
 genai.configure(api_key=api_key)
+
+# import os
+# import time
+# import google.generativeai as genai
+
+
+# # Configure the Gemini API key
+# api_key = "AIzaSyBGWNH9mygdQepDV1YvPt94TiTTpJ5V5_I"
+# genai.configure(api_key=api_key)
 
 def upload_to_gemini(path, mime_type=None):
     """Uploads the given file to Gemini."""
@@ -43,11 +57,14 @@ def start_chat_with_files(files):
         generation_config=generation_config,
     )
 
+    with open(r"C:\Users\tusha\OneDrive\Desktop\HWI_5\pha\data\whoText.txt", 'r') as f:
+        who_guidelines_content = f.read()
+
     chat_session = model.start_chat(
         history=[
             {
                 "role": "user",
-                "parts": [files[0]],
+                "parts": [who_guidelines_content],
             }
         ]
     )
