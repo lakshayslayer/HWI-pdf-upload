@@ -2,8 +2,7 @@ import uvicorn
 from fastapi import FastAPI, UploadFile, File
 import os
 import mimetypes
-from googleAI.geminiAPI import upload_to_gemini, wait_for_files_active, start_empty_chat, send_message
-import json
+from googleAI.geminiAPI import upload_to_gemini, wait_for_files_active, start_empty_chat, send_message, extract_text_from_pdf
 
 app = FastAPI()
 
@@ -16,13 +15,15 @@ def initialize_chat_session():
     if chat_session is None:
         print("Failed to start chat session.")
         return
-    # Upload default PDF as knowledge base
+    
+    # Path to the default PDF file
     default_pdf_path = r"C:\Users\tusha\OneDrive\Desktop\HWI_5\pha\data\EMROPUB_2019_en_23536.pdf"
-    mime_type, _ = mimetypes.guess_type(default_pdf_path)
-    uploaded_file = upload_to_gemini(default_pdf_path, mime_type=mime_type or "application/octet-stream")
-    wait_for_files_active([uploaded_file])
-    # Add the default PDF file to the chat session
-    send_message(chat_session, "Add this PDF as knowledge base.")
+    
+    # Extract the text from the PDF file
+    pdf_text = extract_text_from_pdf(default_pdf_path)
+    
+    # Send the extracted text as a message to the chat session
+    send_message(chat_session, pdf_text)
 
 @app.on_event("startup")
 async def startup_event():
@@ -62,7 +63,7 @@ async def upload_image(image: UploadFile = File(...)):
     wait_for_files_active([uploaded_file])
 
     # Send the uploaded image to the chat session and ask a query
-    response_text = send_message(chat_session, "Analyze this file for its nutritional content.")
+    response_text = send_message(chat_session, "extract the nutrients details from the image.is it healthy for children according to WHO guidelines?")
 
     # Print response for debugging
     print(f"Response from Gemini API: {response_text}")
