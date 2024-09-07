@@ -4,7 +4,6 @@ Personalized Health App
 Features
     1. Health Check Endpoint: GET /health
         Returns a confirmation message indicating that the server is running.
-
     2. Image Upload and Health Assessment: POST /upload-image/
         a. Allows users to upload images of food labels.
         b. Saves the uploaded image to the server.
